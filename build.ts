@@ -3,6 +3,7 @@ import dts from 'bun-plugin-dts';
 
 const defaultBuildConfig: BuildConfig = {
   entrypoints: ['./src/index.ts'],
+  target: "browser",
   outdir: './dist',
 };
 

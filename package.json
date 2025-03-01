@@ -1,7 +1,7 @@
 {
   "name": "@l33tc0d3/reshape",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -42,13 +42,11 @@
     "bun-plugin-dts": "^0.3.0",
     "eslint": "^9.21.0",
     "eslint-plugin-prettier": "^5.2.3",
-    "typescript-eslint": "^8.25.0"
+    "typescript-eslint": "^8.25.0",
+    "typedoc": "^0.27.9"
   },
-  "private": true,
+  "private": false,
   "peerDependencies": {
     "typescript": "^5"
-  },
-  "dependencies": {
-    "typedoc": "^0.27.9"
   }
 }
