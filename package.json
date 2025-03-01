@@ -11,9 +11,16 @@
     "import": "./dist/index.js",
     "require": "./dist/index.cjs"
   },
+  "typedocOptions": {
+    "entryPoints": ["./src/index.ts"],
+    "exclude": "**/*.test.ts",
+    "entryPointStrategy": "expand"
+  },
   "scripts": {
     "build": "bun run build.ts",
-    "prepublishOnly": "bun run build"
+    "prepublishOnly": "bun run build",
+    "lint": "eslint",
+    "docs": "typedoc"
   },
   "files": [
     "dist"
@@ -30,11 +37,18 @@
   "bugs": "https://github.com/antonmarsden/reshape/issues",
   "author": "Anton Marsden <antonmarsden@gmail.com>",
   "devDependencies": {
+    "@eslint/js": "^9.21.0",
+    "@types/bun": "^1.2.4",
     "bun-plugin-dts": "^0.3.0",
-    "@types/bun": "^1.2.4"
+    "eslint": "^9.21.0",
+    "eslint-plugin-prettier": "^5.2.3",
+    "typescript-eslint": "^8.25.0"
   },
   "private": true,
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "dependencies": {
+    "typedoc": "^0.27.9"
   }
 }
