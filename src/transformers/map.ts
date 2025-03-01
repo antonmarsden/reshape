@@ -1,118 +1,158 @@
 /**
- * Converts a `Map` or `Record` back into an array of objects by reconstructing the key-value pairs
- * into objects with the original key property and values.
+ * Converts a `Map` or `Record` into an array of objects, using a specified key property
+ * and optionally selecting specific properties as the values.
  *
- * @template K - The property key used as the `Map` key or `Record` key.
- * @template V - The value type stored in the `Map` or `Record`, which could be a single property value or an object with selected properties.
+ * @template K - The type of the key property in the `Map` or `Record`. Must be a key of `V`.
+ * @template V - The type of the values in the `Map` or `Record`. Must be an object.
+ * @template P - The type of the properties to include in the resulting objects. Can be a single key of `V`,
+ *               an array of keys of `V`, or `undefined` to include all properties.
  *
- * @param data - The input `Map<K, V>` or `Record<K, V>`, where keys represent object properties and values represent either a single property value or a subset of properties.
- * @param keyProp - The property name to use for the reconstructed objects' key.
+ * @param {Map<K, V> | Record<K, V>} map - The `Map` or `Record` to convert into an array.
+ * @param {K} keyProp - The key property to use as the key in the resulting objects.
+ * @param {P} [valueProps] - Optional. The property or properties of `V` to include in the resulting objects.
+ *                            If not provided, all properties of `V` will be included.
  *
- * @returns An array of objects where:
- * - The `keyProp` is restored as a property of the object.
- * - If values were primitives, they are stored under the `value` property.
- * - If values were objects, they are merged back into the object structure.
+ * @returns {(P extends undefined
+ *     ? V & Record<K, V[K]>
+ *     : P extends keyof V
+ *         ? Record<K, V[K]> & Record<P, V[P]>
+ *         : P extends readonly (keyof V)[]
+ *             ? Record<K, V[K]> & { [Key in P[number]]: V[Key] }
+ *             : never)[]}
+ *          An array of objects where:
+ *          - Each object includes the `keyProp` with the corresponding key.
+ *          - The values are either:
+ *            - All properties of `V` (if `valueProps` is undefined),
+ *            - A single property value (if `valueProps` is a single key), or
+ *            - A subset of properties (if `valueProps` is an array of keys).
  *
  * @example
- * ```ts
- * // Example using Map
- * const userMap = new Map<number, { name: string }>([
- *   [1, { name: 'Alice' }],
- *   [2, { name: 'Bob' }]
+ * const map = new Map([
+ *   [1, { name: 'Alice', age: 25 }],
+ *   [2, { name: 'Bob', age: 30 }],
  * ]);
  *
- * const usersFromMap = mapToArray(userMap, 'id');
- * console.log(usersFromMap);
- * // [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }]
+ * // Case 1: No valueProps (include full object)
+ * const result1 = mapToArray(map, 'id');
+ * console.log(result1);
+ * // Output: [
+ * //   { id: 1, name: 'Alice', age: 25 },
+ * //   { id: 2, name: 'Bob', age: 30 }
+ * // ]
  *
- * // Example using Record
- * const userRecord: Record<number, { name: string }> = {
- *   1: { name: 'Alice' },
- *   2: { name: 'Bob' }
- * };
+ * // Case 2: Single valueProps (include only the specified property)
+ * const result2 = mapToArray(map, 'id', 'name');
+ * console.log(result2);
+ * // Output: [
+ * //   { id: 1, name: 'Alice' },
+ * //   { id: 2, name: 'Bob' }
+ * // ]
  *
- * const usersFromRecord = mapToArray(userRecord, 'id');
- * console.log(usersFromRecord);
- * // [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }]
- * ```
+ * // Case 3: Array of valueProps (include only the specified properties)
+ * const result3 = mapToArray(map, 'id', ['name', 'age'] as const);
+ * console.log(result3);
+ * // Output: [
+ * //   { id: 1, name: 'Alice', age: 25 },
+ * //   { id: 2, name: 'Bob', age: 30 }
+ * // ]
  */
-export const mapToArray = <K extends PropertyKey, V extends object | string | number | boolean>(
-    data: Map<K, V> | Record<K, V>,
-    keyProp: string
-): (V extends object ? V & Record<string, K> : Record<string, K> & Record<string, V>)[] => {
-    return Array.from(
-        data instanceof Map ? data.entries() : (Object.entries(data) as [K, V][])
-    ).map(([key, value]) =>
-        typeof value === 'object' && value !== null
-            ? { ...value, [keyProp]: key }
-            : { [keyProp]: key, value } as any
-    );
+export const mapToArray = <
+    K extends keyof V,
+    V extends object,
+    P extends keyof V | readonly (keyof V)[] | undefined = undefined,
+>(
+    map: Map<K, V> | Record<K, V>,
+    keyProp: K,
+    valueProps?: P
+): (P extends undefined
+    ? V & Record<K, V[K]>
+    : P extends keyof V
+        ? Record<K, V[K]> & Record<P, V[P]>
+        : P extends readonly (keyof V)[]
+            ? Record<K, V[K]> & Extract<V, P>
+            : never)[] => {
+    const entries = map instanceof Map ? map.entries() : Object.entries(map) as [K, V][];
+    return Array.from(entries).map(([key, value]) => ({
+        [keyProp]: key,
+        ...(valueProps === undefined
+            ? value
+            : Array.isArray(valueProps)
+                ? valueProps.reduce((acc, prop) => ({ ...acc, [prop]: value[prop as keyof V] }), {})
+                : { [valueProps as keyof V]: value[valueProps as keyof V] }),
+    }));
 };
 
-
 /**
- * Converts a `Map` or `Record` of key-value pairs into an array of objects.
- * Each object contains the key as the value of `keyProp`, and the selected `valueProps`
- * as properties of the object.
+ * Converts a `Map` or `Record` to an array of objects, each containing a `keyProp` property and optionally specified values.
  *
- * This function handles both `Map` and `Record` types and transforms them into arrays
- * of objects with the specified key and values based on the provided `keyProp` and
- * `valueProps`. It flattens the resulting array of arrays into a single array.
+ * This function flattens the values in the map or record (which are assumed to be arrays of objects), then maps each object
+ * to a new object that includes the `keyProp` (the key of the original `Map` or `Record`) along with the selected value properties.
+ * If no specific value properties (`valueProps`) are provided, the entire object is spread into the result.
  *
- * @param data - A `Map` or `Record` containing key-value pairs. If `data` is a `Map`,
- *               its values are arrays; if it's a `Record`, the values are arrays of objects.
- * @param keyProp - The property key that will be used for the key in the resulting objects.
- * @param valueProps - The properties to include from each value. If an array is passed,
- *                     it will pick the properties specified; if a single property is passed,
- *                     it will map that property from each value.
+ * @typeparam T - The type of the objects inside the map/record, which will be transformed into the resulting array.
+ * @typeparam K - The type of the key in the `Map` or `Record`. Typically a string or number.
+ * @typeparam V - The type of the values inside the `Map` or `Record`. Can be a single property key or an array of keys of the value type.
  *
- * @returns An array of objects where each object has the `keyProp` as a key-value pair,
- *          along with the selected `valueProps` from the `data` entries.
+ * @param data - The `Map` or `Record` that you want to convert into an array of objects.
+ *               The values in the map/record must be arrays of objects (or single objects depending on how `valueProps` is used).
+ * @param keyProp - The name of the key property that will be added to each object in the resulting array.
+ * @param valueProps - An optional list of properties from the value object that will be included in the resulting object.
+ *                     If a single property is provided, it will be included directly.
+ *                     If not provided, the entire value object will be included.
+ *
+ * @returns An array of objects where each object has the `keyProp` and selected properties from the value objects.
  *
  * @example
- * const multiMap = new Map<number, { name: string; age: number }[]>([
- *   [1, [{ name: 'Alice', age: 25 }, { name: 'Alicia', age: 28 }]],
- *   [2, [{ name: 'Bob', age: 30 }]],
+ * // Example 1: Converting a `Map` to an array with selected properties
+ * const myMap = new Map([
+ *   [1, [{ name: 'Alice', age: 25 }, { name: 'Bob', age: 30 }]],
+ *   [2, [{ name: 'Charlie', age: 35 }]]
  * ]);
  *
- * const resultFromMap = multiMapToArray(multiMap, 'id', ['name', 'age']);
- * console.log(resultFromMap);
- * // Output:
- * // [
- * //   { id: 1, name: 'Alice', age: 25 },
- * //   { id: 1, name: 'Alicia', age: 28 },
- * //   { id: 2, name: 'Bob', age: 30 },
- * // ]
+ * const result = multiMapToArray(myMap, 'id', ['name']);
+ * console.log(result);
+ * // Output: [{ id: 1, name: 'Alice' }, { id: 1, name: 'Bob' }, { id: 2, name: 'Charlie' }]
  *
  * @example
- * const record: Record<number, { name: string; age: number }[]> = {
- *   1: [{ name: 'Alice', age: 25 }, { name: 'Alicia', age: 28 }],
- *   2: [{ name: 'Bob', age: 30 }],
+ * // Example 2: Converting a `Record` to an array with a single property
+ * const myRecord = {
+ *   1: [{ name: 'Alice', age: 25 }, { name: 'Bob', age: 30 }],
+ *   2: [{ name: 'Charlie', age: 35 }]
  * };
  *
- * const resultFromRecord = multiMapToArray(record, 'id', ['name', 'age']);
- * console.log(resultFromRecord);
- * // Output:
- * // [
- * //   { id: 1, name: 'Alice', age: 25 },
- * //   { id: 1, name: 'Alicia', age: 28 },
- * //   { id: 2, name: 'Bob', age: 30 },
- * // ]
+ * const result = multiMapToArray(myRecord, 'id', 'name');
+ * console.log(result);
+ * // Output: [{ id: 1, name: 'Alice' }, { id: 1, name: 'Bob' }, { id: 2, name: 'Charlie' }]
+ *
+ * @example
+ * // Example 3: Converting a `Map` to an array with all properties when no `valueProps` is provided
+ * const myMap = new Map([
+ *   [1, [{ name: 'Alice', age: 25 }, { name: 'Bob', age: 30 }]],
+ *   [2, [{ name: 'Charlie', age: 35 }]]
+ * ]);
+ *
+ * const result = multiMapToArray(myMap, 'id');
+ * console.log(result);
+ * // Output: [{ id: 1, name: 'Alice', age: 25 }, { id: 1, name: 'Bob', age: 30 }, { id: 2, name: 'Charlie', age: 35 }]
  */
 export const multiMapToArray = <T, K extends keyof T, V extends keyof T | readonly (keyof T)[]>(
     data: Map<T[K], (V extends readonly (keyof T)[] ? Pick<T, V[number]> : T[Extract<V, keyof T>])[]> | Record<T[K] & PropertyKey, (V extends readonly (keyof T)[] ? Pick<T, V[number]> : T[Extract<V, keyof T>])[]>,
     keyProp: K,
-    valueProps: V
+    valueProps?: V
 ): T[] => {
     const entries = data instanceof Map
         ? Array.from(data.entries())
         : Object.entries(data) as [string, (V extends readonly (keyof T)[] ? Pick<T, V[number]> : T[Extract<V, keyof T>])[]][];
+
+    // Flatten the entries and map each entry to the desired object structure
     return entries.flatMap(([key, values]) => {
         return values.map((value) => ({
             [keyProp]: key,
-            ...(Array.isArray(valueProps)
-                ? valueProps.reduce((acc, prop) => ({ ...acc, [prop]: value[prop as keyof typeof value] }), {})
-                : { [valueProps as keyof T]: value })
+            ...(valueProps
+                ? (Array.isArray(valueProps)
+                    ? valueProps.reduce((acc, prop) => ({ ...acc, [prop]: value[prop as keyof typeof value] }), {})
+                    : { [valueProps as keyof T]: value })
+                : { ...value })
         }));
     });
 };
