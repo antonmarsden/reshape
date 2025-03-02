@@ -69,7 +69,7 @@ export const mapToArray = <
     : P extends keyof V
         ? Record<K, V[K]> & Record<P, V[P]>
         : P extends readonly (keyof V)[]
-            ? Record<K, V[K]> & Extract<V, P>
+            ? Record<K, V[K]> & Pick<V, P[number]>
             : never)[] => {
     const entries = map instanceof Map ? map.entries() : Object.entries(map) as [K, V][];
     return Array.from(entries).map(([key, value]) => ({
