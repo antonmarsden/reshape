@@ -1,220 +1,304 @@
 /**
- * Converts an array of objects into a `Map`, using a specified property as the key
- * and either a single property or multiple properties as the value.
+ * Converts an array of objects into a `Map` using a specified key property and optional value properties.
  *
- * @template T - The type of objects in the input array.
- * @template K - The key property of the object, which will be used as the `Map` key.
- * @template V - Either a single property key (for simple values) or an array of property keys (for object values).
+ * @template T - The type of objects in the array.
+ * @template K - The key property of the object (must be a key of `T`).
+ * @template V - The value property or properties of the object (can be a single key of `T` or an array of keys of `T`).
  *
- * @param array - The input array of objects to be transformed into a `Map`.
- * @param keyProp - The property of each object to be used as the key in the `Map`.
- * @param valueProps - A single property key to use as the value, or an array of property keys to create a subset of the object.
+ * @param {T[]} array - The array of objects to convert into a `Map`.
+ * @param {K} keyProp - The property of the object to use as the key in the `Map`.
+ * @param {V} [valueProps] - Optional. The property or properties of the object to use as the value in the `Map`.
+ * If not provided, the entire object will be used as the value.
  *
- * @returns A `Map` where:
- * - The keys are derived from the specified `keyProp` of each object.
+ * @returns {Map<T[K], V extends readonly (keyof T)[] ? Pick<T, V[number]> : V extends keyof T ? T[V] : T>}
+ * A `Map` where:
+ * - The keys are the values of the `keyProp` property.
  * - The values are either:
- *   - The value of the specified property if `valueProps` is a single key.
- *   - A subset of the object containing only the specified properties if `valueProps` is an array of keys.
+ *   - A subset of the object (if `valueProps` is an array of keys).
+ *   - A single property of the object (if `valueProps` is a single key).
+ *   - The entire object (if `valueProps` is not provided).
  *
  * @example
- * ```ts
- * const users = [
+ * // Example 1: Using a single value property
+ * const array1 = [
  *   { id: 1, name: 'Alice', age: 25 },
- *   { id: 2, name: 'Bob', age: 30 }
+ *   { id: 2, name: 'Bob', age: 30 },
  * ];
+ * const map1 = arrayToMap(array1, 'id', 'name');
+ * // Map<number, string>:
+ * // 1 => 'Alice'
+ * // 2 => 'Bob'
  *
- * // Mapping by `id`, extracting only `name`
- * const nameMap = arrayToMap(users, 'id', 'name');
- * console.log(nameMap.get(1)); // 'Alice'
+ * @example
+ * // Example 2: Using multiple value properties
+ * const array2 = [
+ *   { id: 1, name: 'Alice', age: 25 },
+ *   { id: 2, name: 'Bob', age: 30 },
+ * ];
+ * const map2 = arrayToMap(array2, 'id', ['name', 'age']);
+ * // Map<number, { name: string, age: number }>:
+ * // 1 => { name: 'Alice', age: 25 }
+ * // 2 => { name: 'Bob', age: 30 }
  *
- * // Mapping by `id`, extracting `name` and `age`
- * const userSubsetMap = arrayToMap(users, 'id', ['name', 'age']);
- * console.log(userSubsetMap.get(1)); // { name: 'Alice', age: 25 }
- * ```
+ * @example
+ * // Example 3: Using no value properties (entire object as value)
+ * const array3 = [
+ *   { id: 1, name: 'Alice', age: 25 },
+ *   { id: 2, name: 'Bob', age: 30 },
+ * ];
+ * const map3 = arrayToMap(array3, 'id');
+ * // Map<number, { id: number, name: string, age: number }>:
+ * // 1 => { id: 1, name: 'Alice', age: 25 }
+ * // 2 => { id: 2, name: 'Bob', age: 30 }
  */
 export const arrayToMap = <T, K extends keyof T, V extends keyof T | readonly (keyof T)[]>(
-  array: T[],
-  keyProp: K,
-  valueProps: V
-): Map<T[K], V extends readonly (keyof T)[] ? Pick<T, V[number]> : T[Extract<V, keyof T>]> => {
-  return new Map(
-    array.map((item) => [
-      item[keyProp],
-      (Array.isArray(valueProps) ? Object.fromEntries(valueProps.map((prop) => [prop, item[prop as keyof T]])) : item[valueProps as keyof T]) as V extends readonly (keyof T)[]
-        ? Pick<T, V[number]>
-        : T[Extract<V, keyof T>],
-    ])
-  );
+    array: T[],
+    keyProp: K,
+    valueProps?: V
+): Map<T[K], V extends readonly (keyof T)[] ? Pick<T, V[number]> : V extends keyof T ? T[V] : T> => {
+    return new Map(
+        array.map((item) => [
+            item[keyProp],
+            valueProps === undefined
+                ? item
+                : (Array.isArray(valueProps)
+                    ? Object.fromEntries(valueProps.map((prop) => [prop, item[prop as keyof T]]))
+                    : item[valueProps as keyof T])
+        ])
+    );
 };
 
 /**
- * Converts an array of objects into a `Record`, using a specified property as the key
- * and either a single property or multiple properties as the value.
+ * Converts an array of objects into a `Record` using a specified key property and optional value properties.
  *
- * @template T - The type of objects in the input array.
- * @template K - The key property of the object, used as the `Record` key.
- * @template V - Either a single property key (for extracting a single value) or an array of property keys (for extracting a subset of each object).
+ * @template T - The type of objects in the array.
+ * @template K - The key property of the object (must be a key of `T`).
+ * @template V - The value property or properties of the object (can be a single key of `T` or an array of keys of `T`).
  *
- * @param array - The input array of objects to be transformed into a `Record`.
- * @param keyProp - The property of each object to be used as the key in the `Record`.
- * @param valueProps - A single property key to use as the value, or an array of property keys to create a subset of the object.
+ * @param {T[]} array - The array of objects to convert into a `Record`.
+ * @param {K} keyProp - The property of the object to use as the key in the `Record`.
+ * @param {V} [valueProps] - Optional. The property or properties of the object to use as the value in the `Record`.
+ * If not provided, the entire object will be used as the value.
  *
- * @returns A `Record` where:
- * - Each key is derived from the specified `keyProp` of the objects in the array.
- * - Each value is one of the following:
- *   - If `valueProps` is a single key, the value is a primitive or a single property value.
- *   - If `valueProps` is an array of keys, the value is an object containing only the specified properties.
- * - If multiple objects have the same key, the last one in the array will overwrite previous values.
+ * @returns {Record<T[K] & PropertyKey, V extends readonly (keyof T)[] ? Pick<T, V[number]> : V extends keyof T ? T[V] : T>}
+ * A `Record` where:
+ * - The keys are the values of the `keyProp` property.
+ * - The values are either:
+ *   - A subset of the object (if `valueProps` is an array of keys).
+ *   - A single property of the object (if `valueProps` is a single key).
+ *   - The entire object (if `valueProps` is not provided).
  *
  * @example
- * ```ts
- * const users = [
- *   { id: 1, username: 'alice', age: 25 },
- *   { id: 2, username: 'bob', age: 30 }
+ * // Example 1: Using a single value property
+ * const array1 = [
+ *   { id: 1, name: 'Alice', age: 25 },
+ *   { id: 2, name: 'Bob', age: 30 },
  * ];
+ * const record1 = arrayToRecord(array1, 'id', 'name');
+ * // Record<number, string>:
+ * // { 1: 'Alice', 2: 'Bob' }
  *
- * // Creating a Record with `id` as key and `username` as value
- * const userRecord = arrayToRecord(users, 'id', 'username');
- * console.log(userRecord); // { 1: 'alice', 2: 'bob' }
+ * @example
+ * // Example 2: Using multiple value properties
+ * const array2 = [
+ *   { id: 1, name: 'Alice', age: 25 },
+ *   { id: 2, name: 'Bob', age: 30 },
+ * ];
+ * const record2 = arrayToRecord(array2, 'id', ['name', 'age']);
+ * // Record<number, { name: string, age: number }>:
+ * // { 1: { name: 'Alice', age: 25 }, 2: { name: 'Bob', age: 30 } }
  *
- * // Creating a Record with `id` as key and multiple properties (`username`, `age`)
- * const detailedUserRecord = arrayToRecord(users, 'id', ['username', 'age']);
- * console.log(detailedUserRecord);
- * // {
- * //   1: { username: 'alice', age: 25 },
- * //   2: { username: 'bob', age: 30 }
- * // }
- * ```
+ * @example
+ * // Example 3: Using no value properties (entire object as value)
+ * const array3 = [
+ *   { id: 1, name: 'Alice', age: 25 },
+ *   { id: 2, name: 'Bob', age: 30 },
+ * ];
+ * const record3 = arrayToRecord(array3, 'id');
+ * // Record<number, { id: number, name: string, age: number }>:
+ * // { 1: { id: 1, name: 'Alice', age: 25 }, 2: { id: 2, name: 'Bob', age: 30 } }
  */
 export const arrayToRecord = <T, K extends keyof T, V extends keyof T | readonly (keyof T)[]>(
-  array: T[],
-  keyProp: K,
-  valueProps: V
-): Record<T[K] & PropertyKey, V extends readonly (keyof T)[] ? Pick<T, V[number]> : T[Extract<V, keyof T>]> => {
-  return array.reduce(
-    (acc, item) => {
-      const key = item[keyProp];
-      const value = Array.isArray(valueProps) ? Object.fromEntries(valueProps.map((prop) => [prop, item[prop as keyof T]])) : item[valueProps as keyof T];
-      acc[key as T[K] & PropertyKey] = value as V extends readonly (keyof T)[] ? Pick<T, V[number]> : T[Extract<V, keyof T>];
-      return acc;
-    },
-    {} as Record<T[K] & PropertyKey, V extends readonly (keyof T)[] ? Pick<T, V[number]> : T[Extract<V, keyof T>]>
-  );
+    array: T[],
+    keyProp: K,
+    valueProps?: V
+): Record<T[K] & PropertyKey, V extends readonly (keyof T)[] ? Pick<T, V[number]> : V extends keyof T ? T[V] : T> => {
+    return array.reduce(
+        (acc, item) => {
+            const key = item[keyProp];
+            const value = valueProps === undefined
+                ? item
+                : (Array.isArray(valueProps)
+                    ? Object.fromEntries(valueProps.map((prop) => [prop, item[prop as keyof T]]))
+                    : item[valueProps as keyof T]);
+            acc[key as T[K] & PropertyKey] = value as V extends readonly (keyof T)[] ? Pick<T, V[number]> : V extends keyof T ? T[V] : T;
+            return acc;
+        },
+        {} as Record<T[K] & PropertyKey, V extends readonly (keyof T)[] ? Pick<T, V[number]> : V extends keyof T ? T[V] : T>
+    );
 };
 
 /**
- * Converts an array of objects into a `Map`, grouping values by a specified key property.
- * Each key in the resulting `Map` maps to an array of corresponding values.
+ * Converts an array of objects into a `Map` where each key maps to an array of values, using a specified key property and optional value properties.
  *
- * @template T - The type of objects in the input array.
- * @template K - The key property of the object, used as the `Map` key.
- * @template V - Either a single property key (for extracting a single value) or an array of property keys (for extracting a subset of each object).
+ * @template T - The type of objects in the array.
+ * @template K - The key property of the object (must be a key of `T`).
+ * @template V - The value property or properties of the object (can be a single key of `T` or an array of keys of `T`).
  *
- * @param array - The input array of objects to be transformed into a `Map`.
- * @param keyProp - The property of each object to be used as the key in the `Map`.
- * @param valueProps - A single property key to use as the value, or an array of property keys to create a subset of the object.
+ * @param {T[]} array - The array of objects to convert into a multi-map.
+ * @param {K} keyProp - The property of the object to use as the key in the `Map`.
+ * @param {V} [valueProps] - Optional. The property or properties of the object to use as the value in the `Map`.
+ * If not provided, the entire object will be used as the value.
  *
- * @returns A `Map` where:
- * - Each key is derived from the specified `keyProp` of the objects in the array.
- * - Each value is an array of corresponding values from the original objects:
- *   - If `valueProps` is a single key, the values in the array are primitive values.
- *   - If `valueProps` is an array of keys, the values are objects containing only the specified properties.
+ * @returns {Map<T[K], (V extends readonly (keyof T)[] ? Pick<T, V[number]> : V extends keyof T ? T[V] : T)[]>}
+ * A `Map` where:
+ * - The keys are the values of the `keyProp` property.
+ * - The values are arrays of either:
+ *   - A subset of the object (if `valueProps` is an array of keys).
+ *   - A single property of the object (if `valueProps` is a single key).
+ *   - The entire object (if `valueProps` is not provided).
  *
  * @example
- * ```ts
- * const users = [
- *   { id: 1, group: 'admin', name: 'Alice' },
- *   { id: 2, group: 'user', name: 'Bob' },
- *   { id: 3, group: 'admin', name: 'Charlie' }
+ * // Example 1: Using a single value property
+ * const array1 = [
+ *   { id: 1, name: 'Alice', age: 25 },
+ *   { id: 1, name: 'Anna', age: 30 },
+ *   { id: 2, name: 'Bob', age: 40 },
  * ];
+ * const multiMap1 = arrayToMultiMap(array1, 'id', 'name');
+ * // Map<number, string[]>:
+ * // 1 => ['Alice', 'Anna']
+ * // 2 => ['Bob']
  *
- * // Grouping users by `group`, extracting only `name`
- * const nameMultiMap = arrayToMultiMap(users, 'group', 'name');
- * console.log(nameMultiMap.get('admin')); // ['Alice', 'Charlie']
+ * @example
+ * // Example 2: Using multiple value properties
+ * const array2 = [
+ *   { id: 1, name: 'Alice', age: 25 },
+ *   { id: 1, name: 'Anna', age: 30 },
+ *   { id: 2, name: 'Bob', age: 40 },
+ * ];
+ * const multiMap2 = arrayToMultiMap(array2, 'id', ['name', 'age']);
+ * // Map<number, { name: string, age: number }[]>:
+ * // 1 => [{ name: 'Alice', age: 25 }, { name: 'Anna', age: 30 }]
+ * // 2 => [{ name: 'Bob', age: 40 }]
  *
- * // Grouping users by `group`, extracting both `id` and `name`
- * const userSubsetMultiMap = arrayToMultiMap(users, 'group', ['id', 'name']);
- * console.log(userSubsetMultiMap.get('admin')); // [{ id: 1, name: 'Alice' }, { id: 3, name: 'Charlie' }]
- * ```
+ * @example
+ * // Example 3: Using no value properties (entire object as value)
+ * const array3 = [
+ *   { id: 1, name: 'Alice', age: 25 },
+ *   { id: 1, name: 'Anna', age: 30 },
+ *   { id: 2, name: 'Bob', age: 40 },
+ * ];
+ * const multiMap3 = arrayToMultiMap(array3, 'id');
+ * // Map<number, { id: number, name: string, age: number }[]>:
+ * // 1 => [{ id: 1, name: 'Alice', age: 25 }, { id: 1, name: 'Anna', age: 30 }]
+ * // 2 => [{ id: 2, name: 'Bob', age: 40 }]
  */
 export const arrayToMultiMap = <T, K extends keyof T, V extends keyof T | readonly (keyof T)[]>(
-  array: T[],
-  keyProp: K,
-  valueProps: V
-): Map<T[K], (V extends readonly (keyof T)[] ? Pick<T, V[number]> : T[Extract<V, keyof T>])[]> => {
-  const multiMap = new Map<T[K], (V extends readonly (keyof T)[] ? Pick<T, V[number]> : T[Extract<V, keyof T>])[]>();
+    array: T[],
+    keyProp: K,
+    valueProps?: V // Make valueProps optional
+): Map<T[K], (V extends readonly (keyof T)[] ? Pick<T, V[number]> : V extends keyof T ? T[V] : T)[]> => {
+    const multiMap = new Map<T[K], (V extends readonly (keyof T)[] ? Pick<T, V[number]> : V extends keyof T ? T[V] : T)[]>();
 
-  array.forEach((item) => {
-    const key = item[keyProp];
-    const value = (
-      Array.isArray(valueProps) ? Object.fromEntries(valueProps.map((prop) => [prop, item[prop as keyof T]])) : item[valueProps as keyof T]
-    ) as V extends readonly (keyof T)[] ? Pick<T, V[number]> : T[Extract<V, keyof T>];
-    let values = multiMap.get(key);
-    if (values === undefined) {
-      values = [];
-      multiMap.set(key, values);
-    }
-    values.push(value);
-  });
+    array.forEach((item) => {
+        const key = item[keyProp];
+        const value = (
+            valueProps === undefined
+                ? item
+                : (Array.isArray(valueProps)
+                    ? Object.fromEntries(valueProps.map((prop) => [prop, item[prop as keyof T]]))
+                    : item[valueProps as keyof T])
+        ) as V extends readonly (keyof T)[] ? Pick<T, V[number]> : V extends keyof T ? T[V] : T;
 
-  return multiMap;
+        let values = multiMap.get(key);
+        if (values === undefined) {
+            values = [];
+            multiMap.set(key, values);
+        }
+        values.push(value);
+    });
+
+    return multiMap;
 };
 
 /**
- * Converts an array of objects into a `Record`, grouping values by a specified key property.
- * Each key in the resulting `Record` maps to an array of corresponding values.
+ * Converts an array of objects into a `Record` where each key maps to an array of values, using a specified key property and optional value properties.
  *
- * @template T - The type of objects in the input array.
- * @template K - The key property of the object, used as the `Record` key.
- * @template V - Either a single property key (for extracting a single value) or an array of property keys (for extracting a subset of each object).
+ * @template T - The type of objects in the array.
+ * @template K - The key property of the object (must be a key of `T`).
+ * @template V - The value property or properties of the object (can be a single key of `T` or an array of keys of `T`).
  *
- * @param array - The input array of objects to be transformed into a `Record`.
- * @param keyProp - The property of each object to be used as the key in the `Record`.
- * @param valueProps - A single property key to use as the value, or an array of property keys to create a subset of the object.
+ * @param {T[]} array - The array of objects to convert into a multi-record.
+ * @param {K} keyProp - The property of the object to use as the key in the `Record`.
+ * @param {V} [valueProps] - Optional. The property or properties of the object to use as the value in the `Record`.
+ * If not provided, the entire object will be used as the value.
  *
- * @returns A `Record` where:
- * - Each key is derived from the specified `keyProp` of the objects in the array.
- * - Each value is an array of corresponding values from the original objects:
- *   - If `valueProps` is a single key, the values in the array are primitive values.
- *   - If `valueProps` is an array of keys, the values are objects containing only the specified properties.
+ * @returns {Record<T[K] & PropertyKey, (V extends readonly (keyof T)[] ? Pick<T, V[number]> : V extends keyof T ? T[V] : T)[]>}
+ * A `Record` where:
+ * - The keys are the values of the `keyProp` property.
+ * - The values are arrays of either:
+ *   - A subset of the object (if `valueProps` is an array of keys).
+ *   - A single property of the object (if `valueProps` is a single key).
+ *   - The entire object (if `valueProps` is not provided).
  *
  * @example
- * ```ts
- * const users = [
- *   { id: 1, group: 'admin', name: 'Alice' },
- *   { id: 2, group: 'user', name: 'Bob' },
- *   { id: 3, group: 'admin', name: 'Charlie' }
+ * // Example 1: Using a single value property
+ * const array1 = [
+ *   { id: 1, name: 'Alice', age: 25 },
+ *   { id: 1, name: 'Anna', age: 30 },
+ *   { id: 2, name: 'Bob', age: 40 },
  * ];
+ * const multiRecord1 = arrayToMultiRecord(array1, 'id', 'name');
+ * // Record<number, string[]>:
+ * // { 1: ['Alice', 'Anna'], 2: ['Bob'] }
  *
- * // Grouping users by `group`, extracting only `name`
- * const nameMultiRecord = arrayToMultiRecord(users, 'group', 'name');
- * console.log(nameMultiRecord.admin); // ['Alice', 'Charlie']
+ * @example
+ * // Example 2: Using multiple value properties
+ * const array2 = [
+ *   { id: 1, name: 'Alice', age: 25 },
+ *   { id: 1, name: 'Anna', age: 30 },
+ *   { id: 2, name: 'Bob', age: 40 },
+ * ];
+ * const multiRecord2 = arrayToMultiRecord(array2, 'id', ['name', 'age']);
+ * // Record<number, { name: string, age: number }[]>:
+ * // { 1: [{ name: 'Alice', age: 25 }, { name: 'Anna', age: 30 }], 2: [{ name: 'Bob', age: 40 }] }
  *
- * // Grouping users by `group`, extracting both `id` and `name`
- * const userSubsetMultiRecord = arrayToMultiRecord(users, 'group', ['id', 'name']);
- * console.log(userSubsetMultiRecord.admin); // [{ id: 1, name: 'Alice' }, { id: 3, name: 'Charlie' }]
- * ```
+ * @example
+ * // Example 3: Using no value properties (entire object as value)
+ * const array3 = [
+ *   { id: 1, name: 'Alice', age: 25 },
+ *   { id: 1, name: 'Anna', age: 30 },
+ *   { id: 2, name: 'Bob', age: 40 },
+ * ];
+ * const multiRecord3 = arrayToMultiRecord(array3, 'id');
+ * // Record<number, { id: number, name: string, age: number }[]>:
+ * // { 1: [{ id: 1, name: 'Alice', age: 25 }, { id: 1, name: 'Anna', age: 30 }], 2: [{ id: 2, name: 'Bob', age: 40 }] }
  */
 export const arrayToMultiRecord = <T, K extends keyof T, V extends keyof T | readonly (keyof T)[]>(
-  array: T[],
-  keyProp: K,
-  valueProps: V
-): Record<T[K] & PropertyKey, (V extends readonly (keyof T)[] ? Pick<T, V[number]> : T[Extract<V, keyof T>])[]> => {
-  return array.reduce(
-    (acc, item) => {
-      const key = item[keyProp];
-      const value = (
-        Array.isArray(valueProps) ? Object.fromEntries(valueProps.map((prop) => [prop, item[prop as keyof T]])) : item[valueProps as keyof T]
-      ) as V extends readonly (keyof T)[] ? Pick<T, V[number]> : T[Extract<V, keyof T>];
+    array: T[],
+    keyProp: K,
+    valueProps?: V
+): Record<T[K] & PropertyKey, (V extends readonly (keyof T)[] ? Pick<T, V[number]> : V extends keyof T ? T[V] : T)[]> => {
+    return array.reduce(
+        (acc, item) => {
+            const key = item[keyProp];
+            const value = (
+                valueProps === undefined
+                    ? item
+                    : (Array.isArray(valueProps)
+                        ? Object.fromEntries(valueProps.map((prop) => [prop, item[prop as keyof T]]))
+                        : item[valueProps as keyof T])
+            ) as V extends readonly (keyof T)[] ? Pick<T, V[number]> : V extends keyof T ? T[V] : T;
 
-      let values = acc[key as T[K] & PropertyKey];
-      if (values === undefined) {
-        values = [];
-        acc[key as T[K] & PropertyKey] = values;
-      }
-      values.push(value);
-      return acc;
-    },
-    {} as Record<T[K] & PropertyKey, (V extends readonly (keyof T)[] ? Pick<T, V[number]> : T[Extract<V, keyof T>])[]>
-  );
+            let values = acc[key as T[K] & PropertyKey];
+            if (values === undefined) {
+                values = [];
+                acc[key as T[K] & PropertyKey] = values;
+            }
+            values.push(value);
+            return acc;
+        },
+        {} as Record<T[K] & PropertyKey, (V extends readonly (keyof T)[] ? Pick<T, V[number]> : V extends keyof T ? T[V] : T)[]>
+    );
 };

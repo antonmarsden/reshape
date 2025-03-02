@@ -143,8 +143,6 @@ export const multiMapToArray = <T, K extends keyof T, V extends keyof T | readon
     const entries = data instanceof Map
         ? Array.from(data.entries())
         : Object.entries(data) as [string, (V extends readonly (keyof T)[] ? Pick<T, V[number]> : T[Extract<V, keyof T>])[]][];
-
-    // Flatten the entries and map each entry to the desired object structure
     return entries.flatMap(([key, values]) => {
         return values.map((value) => ({
             [keyProp]: key,
