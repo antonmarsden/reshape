@@ -89,9 +89,9 @@ export const mapToArray = <
  * to a new object that includes the `keyProp` (the key of the original `Map` or `Record`) along with the selected value properties.
  * If no specific value properties (`valueProps`) are provided, the entire object is spread into the result.
  *
- * @typeparam T - The type of the objects inside the map/record, which will be transformed into the resulting array.
- * @typeparam K - The type of the key in the `Map` or `Record`. Typically a string or number.
- * @typeparam V - The type of the values inside the `Map` or `Record`. Can be a single property key or an array of keys of the value type.
+ * @template T - The type of the objects inside the map/record, which will be transformed into the resulting array.
+ * @template K - The type of the key in the `Map` or `Record`. Typically a string or number.
+ * @template V - The type of the values inside the `Map` or `Record`. Can be a single property key or an array of keys of the value type.
  *
  * @param data - The `Map` or `Record` that you want to convert into an array of objects.
  *               The values in the map/record must be arrays of objects (or single objects depending on how `valueProps` is used).

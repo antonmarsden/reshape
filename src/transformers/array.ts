@@ -1,3 +1,14 @@
+export function arrayToMap<T, K extends keyof T, V extends keyof T | readonly (keyof T)[]>(
+    array: T[],
+    keyProp: K,
+    valueProps: V
+): Map<T[K], Pick<T, V extends readonly (keyof T)[] ? V[number] : V>>;
+
+export function arrayToMap<T, K extends keyof T>(
+    array: T[],
+    keyProp: K
+): Map<T[K], T>;
+
 /**
  * Converts an array of objects into a `Map` using a specified key property and optional value properties.
  *
@@ -51,11 +62,11 @@
  * // 1 => { id: 1, name: 'Alice', age: 25 }
  * // 2 => { id: 2, name: 'Bob', age: 30 }
  */
-export const arrayToMap = <T, K extends keyof T, V extends keyof T | readonly (keyof T)[]>(
+export function arrayToMap<T, K extends keyof T, V extends keyof T | readonly (keyof T)[]>(
     array: T[],
     keyProp: K,
     valueProps?: V
-): Map<T[K], V extends readonly (keyof T)[] ? Pick<T, V[number]> : V extends keyof T ? T[V] : T> => {
+): Map<T[K], V extends readonly (keyof T)[] ? Pick<T, V[number]> : V extends keyof T ? T[V] : T> {
     return new Map(
         array.map((item) => [
             item[keyProp],
@@ -66,7 +77,18 @@ export const arrayToMap = <T, K extends keyof T, V extends keyof T | readonly (k
                     : item[valueProps as keyof T])
         ])
     );
-};
+}
+
+export function arrayToRecord<T, K extends keyof T, V extends keyof T | readonly (keyof T)[]>(
+    array: T[],
+    keyProp: K,
+    valueProps: V
+): Record<T[K] & PropertyKey, Pick<T, V extends readonly (keyof T)[] ? V[number] : V>>;
+
+export function arrayToRecord<T, K extends keyof T>(
+    array: T[],
+    keyProp: K
+): Record<T[K] & PropertyKey, T>;
 
 /**
  * Converts an array of objects into a `Record` using a specified key property and optional value properties.
@@ -118,11 +140,11 @@ export const arrayToMap = <T, K extends keyof T, V extends keyof T | readonly (k
  * // Record<number, { id: number, name: string, age: number }>:
  * // { 1: { id: 1, name: 'Alice', age: 25 }, 2: { id: 2, name: 'Bob', age: 30 } }
  */
-export const arrayToRecord = <T, K extends keyof T, V extends keyof T | readonly (keyof T)[]>(
+export function arrayToRecord <T, K extends keyof T, V extends keyof T | readonly (keyof T)[]>(
     array: T[],
     keyProp: K,
     valueProps?: V
-): Record<T[K] & PropertyKey, V extends readonly (keyof T)[] ? Pick<T, V[number]> : V extends keyof T ? T[V] : T> => {
+): Record<T[K] & PropertyKey, V extends readonly (keyof T)[] ? Pick<T, V[number]> : V extends keyof T ? T[V] : T> {
     return array.reduce(
         (acc, item) => {
             const key = item[keyProp];
@@ -136,7 +158,18 @@ export const arrayToRecord = <T, K extends keyof T, V extends keyof T | readonly
         },
         {} as Record<T[K] & PropertyKey, V extends readonly (keyof T)[] ? Pick<T, V[number]> : V extends keyof T ? T[V] : T>
     );
-};
+}
+
+export function arrayToMultiMap<T, K extends keyof T, V extends keyof T | readonly (keyof T)[]>(
+    array: T[],
+    keyProp: K,
+    valueProps: V
+): Map<T[K], Pick<T, V extends readonly (keyof T)[] ? V[number] : V>>;
+
+export function arrayToMultiMap<T, K extends keyof T>(
+    array: T[],
+    keyProp: K
+): Map<T[K], T[]>;
 
 /**
  * Converts an array of objects into a `Map` where each key maps to an array of values, using a specified key property and optional value properties.
@@ -194,11 +227,11 @@ export const arrayToRecord = <T, K extends keyof T, V extends keyof T | readonly
  * // 1 => [{ id: 1, name: 'Alice', age: 25 }, { id: 1, name: 'Anna', age: 30 }]
  * // 2 => [{ id: 2, name: 'Bob', age: 40 }]
  */
-export const arrayToMultiMap = <T, K extends keyof T, V extends keyof T | readonly (keyof T)[]>(
+export function arrayToMultiMap<T, K extends keyof T, V extends keyof T | readonly (keyof T)[]>(
     array: T[],
     keyProp: K,
     valueProps?: V // Make valueProps optional
-): Map<T[K], (V extends readonly (keyof T)[] ? Pick<T, V[number]> : V extends keyof T ? T[V] : T)[]> => {
+): Map<T[K], (V extends readonly (keyof T)[] ? Pick<T, V[number]> : V extends keyof T ? T[V] : T)[]> {
     const multiMap = new Map<T[K], (V extends readonly (keyof T)[] ? Pick<T, V[number]> : V extends keyof T ? T[V] : T)[]>();
 
     array.forEach((item) => {
@@ -220,7 +253,19 @@ export const arrayToMultiMap = <T, K extends keyof T, V extends keyof T | readon
     });
 
     return multiMap;
-};
+}
+
+
+export function arrayToMultiRecord<T, K extends keyof T, V extends keyof T | readonly (keyof T)[]>(
+    array: T[],
+    keyProp: K,
+    valueProps: V
+): Record<T[K] & PropertyKey, Pick<T, V extends readonly (keyof T)[] ? V[number] : V>>;
+
+export function arrayToMultiRecord<T, K extends keyof T>(
+    array: T[],
+    keyProp: K
+): Record<T[K] & PropertyKey, T[]>;
 
 /**
  * Converts an array of objects into a `Record` where each key maps to an array of values, using a specified key property and optional value properties.
@@ -275,11 +320,11 @@ export const arrayToMultiMap = <T, K extends keyof T, V extends keyof T | readon
  * // Record<number, { id: number, name: string, age: number }[]>:
  * // { 1: [{ id: 1, name: 'Alice', age: 25 }, { id: 1, name: 'Anna', age: 30 }], 2: [{ id: 2, name: 'Bob', age: 40 }] }
  */
-export const arrayToMultiRecord = <T, K extends keyof T, V extends keyof T | readonly (keyof T)[]>(
+export function arrayToMultiRecord <T, K extends keyof T, V extends keyof T | readonly (keyof T)[]>(
     array: T[],
     keyProp: K,
     valueProps?: V
-): Record<T[K] & PropertyKey, (V extends readonly (keyof T)[] ? Pick<T, V[number]> : V extends keyof T ? T[V] : T)[]> => {
+): Record<T[K] & PropertyKey, (V extends readonly (keyof T)[] ? Pick<T, V[number]> : V extends keyof T ? T[V] : T)[]> {
     return array.reduce(
         (acc, item) => {
             const key = item[keyProp];
@@ -301,4 +346,4 @@ export const arrayToMultiRecord = <T, K extends keyof T, V extends keyof T | rea
         },
         {} as Record<T[K] & PropertyKey, (V extends readonly (keyof T)[] ? Pick<T, V[number]> : V extends keyof T ? T[V] : T)[]>
     );
-};
+}
