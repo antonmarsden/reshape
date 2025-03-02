@@ -1,11 +1,11 @@
 {
   "name": "@l33tc0d3/reshape",
   "type": "module",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "description": "Utilities for reshaping collections",
+  "description": "Provides useful methods for reshaping collections",
   "exports": {
     "types": "./dist/index.d.ts",
     "import": "./dist/index.js",

@@ -1,5 +1,9 @@
 # reshape
 
+Provides useful methods for reshaping collections.
+
+Documentation is available [here](https://antonmarsden.github.io/reshape).
+
 ## Setup
 
 ```bash
