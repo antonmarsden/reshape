@@ -1,2 +1,2 @@
-export { arrayToMultiRecord, arrayToRecord, arrayToMultiMap, arrayToMap } from './transformers/array';
-export { mapToArray, multiMapToArray } from "./transformers/map";
+export { arrayToMultiRecord, arrayToRecord, arrayToMultiMap, arrayToMap } from './array';
+export { mapToArray, multiMapToArray } from "./map";
