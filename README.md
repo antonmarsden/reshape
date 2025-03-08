@@ -2,9 +2,15 @@
 
 Provides useful methods for reshaping collections.
 
+## Installation
+
+```npm install @l33tc0d3/reshape```
+
+## Documentation
+
 Documentation is available [here](https://antonmarsden.github.io/reshape).
 
-## Setup
+## Development Setup
 
 ```bash
 # install dependencies
