@@ -1,2 +1,2 @@
 export { arrayToMultiRecord, arrayToRecord, arrayToMultiMap, arrayToMap } from './array';
-export { mapToArray, multiMapToArray } from "./map";
+export { mapToArray, multiMapToArray } from './map';

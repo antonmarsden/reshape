@@ -12,7 +12,6 @@ export default [
   {
     files: ['src/**/*.ts'],
     rules: {
-      'func-style': ['error', 'expression'],
       'no-restricted-syntax': ['off', 'ForOfStatement'],
       'no-console': ['error'],
       'prefer-template': 'error',
@@ -23,7 +22,6 @@ export default [
   {
     files: ['src/**/*.ts'],
     rules: {
-      '@typescript-eslint/explicit-function-return-type': 'error',
       '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
     },
   },

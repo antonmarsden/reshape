@@ -1,12 +1,9 @@
-export function mapToArray<K extends keyof V, V extends object>(
-    map: Map<K, V> | Record<K, V>,
-    keyProp: K
-): (V & Record<K, V[K]>)[];
+export function mapToArray<K extends keyof V, V extends object>(map: Map<K, V> | Record<K, V>, keyProp: K): (V & Record<K, V[K]>)[];
 
 export function mapToArray<K extends keyof V, V extends object, P extends keyof V | readonly (keyof V)[]>(
-    map: Map<K, V> | Record<K, V>,
-    keyProp: K,
-    valueProps: P
+  map: Map<K, V> | Record<K, V>,
+  keyProp: K,
+  valueProps: P
 ): (Record<K, V[K]> & (P extends keyof V ? Record<P, V[P]> : P extends readonly (keyof V)[] ? Pick<V, P[number]> : never))[];
 
 /**
@@ -67,43 +64,38 @@ export function mapToArray<K extends keyof V, V extends object, P extends keyof 
  * //   { id: 2, name: 'Bob', age: 30 }
  * // ]
  */
-export function mapToArray <
-    K extends keyof V,
-    V extends object,
-    P extends keyof V | readonly (keyof V)[] | undefined = undefined,
->(
-    map: Map<K, V> | Record<K, V>,
-    keyProp: K,
-    valueProps?: P
+export function mapToArray<K extends keyof V, V extends object, P extends keyof V | readonly (keyof V)[] | undefined = undefined>(
+  map: Map<K, V> | Record<K, V>,
+  keyProp: K,
+  valueProps?: P
 ): (P extends undefined
-    ? V & Record<K, V[K]>
-    : P extends keyof V
-        ? Record<K, V[K]> & Record<P, V[P]>
-        : P extends readonly (keyof V)[]
-            ? Record<K, V[K]> & Pick<V, P[number]>
-            : never)[] {
-    const entries = map instanceof Map ? map.entries() : Object.entries(map) as [K, V][];
-    return Array.from(entries).map(([key, value]) => ({
-        [keyProp]: key,
-        ...(valueProps === undefined
-            ? value
-            : Array.isArray(valueProps)
-                ? valueProps.reduce((acc, prop) => ({ ...acc, [prop]: value[prop as keyof V] }), {})
-                : { [valueProps as keyof V]: value[valueProps as keyof V] }),
-    }));
+  ? V & Record<K, V[K]>
+  : P extends keyof V
+    ? Record<K, V[K]> & Record<P, V[P]>
+    : P extends readonly (keyof V)[]
+      ? Record<K, V[K]> & Pick<V, P[number]>
+      : never)[] {
+  const entries = map instanceof Map ? map.entries() : (Object.entries(map) as [K, V][]);
+  return Array.from(entries).map(([key, value]) => ({
+    [keyProp]: key,
+    ...(valueProps === undefined
+      ? value
+      : Array.isArray(valueProps)
+        ? valueProps.reduce((acc, prop) => ({ ...acc, [prop]: value[prop as keyof V] }), {})
+        : { [valueProps as keyof V]: value[valueProps as keyof V] }),
+  }));
 }
 
 // Overload 1: When valueProps is not provided
-export function multiMapToArray<T, K extends keyof T>(
-    data: Map<T[K], T[]> | Record<T[K] & PropertyKey, T[]>,
-    keyProp: K
-): T[];
+export function multiMapToArray<T, K extends keyof T>(data: Map<T[K], T[]> | Record<T[K] & PropertyKey, T[]>, keyProp: K): T[];
 
 // Overload 2: When valueProps is provided
 export function multiMapToArray<T, K extends keyof T, V extends keyof T | readonly (keyof T)[]>(
-    data: Map<T[K], (V extends readonly (keyof T)[] ? Pick<T, V[number]> : T[Extract<V, keyof T>])[]> | Record<T[K] & PropertyKey, (V extends readonly (keyof T)[] ? Pick<T, V[number]> : T[Extract<V, keyof T>])[]>,
-    keyProp: K,
-    valueProps: V
+  data:
+    | Map<T[K], (V extends readonly (keyof T)[] ? Pick<T, V[number]> : T[Extract<V, keyof T>])[]>
+    | Record<T[K] & PropertyKey, (V extends readonly (keyof T)[] ? Pick<T, V[number]> : T[Extract<V, keyof T>])[]>,
+  keyProp: K,
+  valueProps: V
 ): T[];
 
 /**
@@ -159,22 +151,23 @@ export function multiMapToArray<T, K extends keyof T, V extends keyof T | readon
  * console.log(result);
  * // Output: [{ id: 1, name: 'Alice', age: 25 }, { id: 1, name: 'Bob', age: 30 }, { id: 2, name: 'Charlie', age: 35 }]
  */
-export function multiMapToArray <T, K extends keyof T, V extends keyof T | readonly (keyof T)[]>(
-    data: Map<T[K], (V extends readonly (keyof T)[] ? Pick<T, V[number]> : T[Extract<V, keyof T>])[]> | Record<T[K] & PropertyKey, (V extends readonly (keyof T)[] ? Pick<T, V[number]> : T[Extract<V, keyof T>])[]>,
-    keyProp: K,
-    valueProps?: V
+export function multiMapToArray<T, K extends keyof T, V extends keyof T | readonly (keyof T)[]>(
+  data:
+    | Map<T[K], (V extends readonly (keyof T)[] ? Pick<T, V[number]> : T[Extract<V, keyof T>])[]>
+    | Record<T[K] & PropertyKey, (V extends readonly (keyof T)[] ? Pick<T, V[number]> : T[Extract<V, keyof T>])[]>,
+  keyProp: K,
+  valueProps?: V
 ): T[] {
-    const entries = data instanceof Map
-        ? Array.from(data.entries())
-        : Object.entries(data) as [string, (V extends readonly (keyof T)[] ? Pick<T, V[number]> : T[Extract<V, keyof T>])[]][];
-    return entries.flatMap(([key, values]) => {
-        return values.map((value) => ({
-            [keyProp]: key,
-            ...(valueProps
-                ? (Array.isArray(valueProps)
-                    ? valueProps.reduce((acc, prop) => ({ ...acc, [prop]: value[prop as keyof typeof value] }), {})
-                    : { [valueProps as keyof T]: value })
-                : { ...value })
-        }));
-    });
+  const entries =
+    data instanceof Map ? Array.from(data.entries()) : (Object.entries(data) as [string, (V extends readonly (keyof T)[] ? Pick<T, V[number]> : T[Extract<V, keyof T>])[]][]);
+  return entries.flatMap(([key, values]) => {
+    return values.map((value) => ({
+      [keyProp]: key,
+      ...(valueProps
+        ? Array.isArray(valueProps)
+          ? valueProps.reduce((acc, prop) => ({ ...acc, [prop]: value[prop as keyof typeof value] }), {})
+          : { [valueProps as keyof T]: value }
+        : { ...value }),
+    }));
+  });
 }
