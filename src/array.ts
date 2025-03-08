@@ -26,26 +26,29 @@ export function arrayToMap<T, K extends keyof T | ((item: T) => PropertyKey), V 
 ): Map<ArrayToMapKey<K, T>, ReturnType<V>>;
 
 /**
- * Converts an array of objects into a `Map` using a specified key property or function
+ * Converts an array of objects into a `Map`, using a specified key property or function,
  * and an optional value property, array of properties, or value transformation function.
  *
  * @template T - The type of objects in the array.
  * @template K - The type of the key property or key function.
  * @template V - The type of the value property, array of properties, or value function.
  *
- * @param {T[]} array - The array of objects to convert into a `Map`.
+ * @param {T[]} array - The array of objects to convert into a `Map`. If empty, an empty `Map` is returned.
  * @param {K} keyProp - The key property or function used to derive the keys for the `Map`.
- *                      If a function, it will be called with each item to compute the key.
- * @param {V} [valueProps] - Optional. The value property, array of properties, or function
- *                           used to derive the values for the `Map`.
+ *                      - If a string key, each object's property with this key is used as the map key.
+ *                      - If a function, it will be called with each item to compute the key.
+ * @param {V} [valueProps] - Optional. The value property, array of properties, or function used to derive the values for the `Map`.
  *                           - If `undefined`, the entire object is used as the value.
  *                           - If a single key, the corresponding property value is used.
  *                           - If an array of keys, an object with only those properties is used.
  *                           - If a function, it will be called with each item to compute the value.
  *
- * @returns {Map} A `Map` where:
- *                - The keys are derived from `keyProp`.
- *                - The values are derived from `valueProps` (or the entire object if `valueProps` is `undefined`).
+ * @returns {Map<ArrayToMapKey<K, T>, ArrayToMapValue<V, T>>} A `Map` where:
+ *          - The keys are derived from `keyProp`.
+ *          - The values are derived from `valueProps` (or the entire object if `valueProps` is `undefined`).
+ *
+ * @throws {TypeError} If `array` is not an array.
+ * @throws {Error} If `keyProp` is a string and some objects in `array` are missing that property.
  *
  * @example
  * const data = [
@@ -68,6 +71,10 @@ export function arrayToMap<T, K extends keyof T | ((item: T) => PropertyKey), V 
  * // Case 4: Function as valueProps
  * const mapWithCustomValue = arrayToMap(data, 'id', item => ({ fullName: item.name, isAdult: item.age >= 18 }));
  * // Map<number, { fullName: string, isAdult: boolean }>
+ *
+ * // Case 5: Function as keyProp
+ * const mapByCustomKey = arrayToMap(data, item => `${item.name}-${item.age}`);
+ * // Map<string, { id: number, name: string, age: number }>
  */
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 export function arrayToMap<T, K extends keyof T | ((item: T) => PropertyKey), V extends keyof T | readonly (keyof T)[] | ((item: T) => any)>(
@@ -131,26 +138,31 @@ export function arrayToRecord<T, K extends keyof T | ((item: T) => PropertyKey),
 ): Record<ArrayToRecordKey<K, T>, ReturnType<V>>;
 
 /**
- * Converts an array of objects into a `Record` using a specified key property or function
+ * Converts an array of objects into a `Record`, using a specified key property or function,
  * and an optional value property, array of properties, or value transformation function.
  *
  * @template T - The type of objects in the array.
  * @template K - The type of the key property or key function.
  * @template V - The type of the value property, array of properties, or value function.
  *
- * @param {T[]} array - The array of objects to convert into a `Record`.
+ * @param {T[]} array - The array of objects to convert into a `Record`. If empty, an empty `Record` is returned.
  * @param {K} keyProp - The key property or function used to derive the keys for the `Record`.
- *                      If a function, it will be called with each item to compute the key.
- * @param {V} [valueProps] - Optional. The value property, array of properties, or function
- *                           used to derive the values for the `Record`.
+ *                      - If a string key, each object's property with this key is used as the record key.
+ *                      - If a function, it will be called with each item to compute the key.
+ *                      - The resulting keys will be converted to strings.
+ * @param {V} [valueProps] - Optional. The value property, array of properties, or function used to derive the values for the `Record`.
  *                           - If `undefined`, the entire object is used as the value.
  *                           - If a single key, the corresponding property value is used.
  *                           - If an array of keys, an object with only those properties is used.
  *                           - If a function, it will be called with each item to compute the value.
  *
- * @returns {Record} A `Record` where:
- *                  - The keys are derived from `keyProp`.
- *                  - The values are derived from `valueProps` (or the entire object if `valueProps` is `undefined`).
+ * @returns {Record<string, ArrayToRecordValue<V, T>>} A `Record` where:
+ *          - The keys are derived from `keyProp` and converted to strings.
+ *          - The values are derived from `valueProps` (or the entire object if `valueProps` is `undefined`).
+ *
+ * @throws {TypeError} If `array` is not an array.
+ * @throws {Error} If `keyProp` is a string and some objects in `array` are missing that property.
+ * @throws {Error} If `keyProp` function returns a value that cannot be converted to a string.
  *
  * @example
  * const data = [
