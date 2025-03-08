@@ -1,6 +1,6 @@
-type ArrayToMapKey<K, T> = K extends keyof T ? T[K] : K extends (item: T) => PropertyKey ? ReturnType<K> : never;
+export type ArrayToMapKey<K, T> = K extends keyof T ? T[K] : K extends (item: T) => PropertyKey ? ReturnType<K> : never;
 /* eslint-disable  @typescript-eslint/no-explicit-any */
-type ArrayToMapValue<V, T> = V extends readonly (keyof T)[] ? Pick<T, Extract<V[number], keyof T>> : V extends keyof T ? T[V] : V extends (item: T) => any ? ReturnType<V> : T;
+export type ArrayToMapValue<V, T> = V extends readonly (keyof T)[] ? Pick<T, Extract<V[number], keyof T>> : V extends keyof T ? T[V] : V extends (item: T) => any ? ReturnType<V> : T;
 
 export function arrayToMap<T, K extends keyof T | ((item: T) => PropertyKey)>(array: T[], keyProp: K): Map<ArrayToMapKey<K, T>, T>;
 
@@ -99,8 +99,8 @@ export function arrayToMap<T, K extends keyof T | ((item: T) => PropertyKey), V 
   return map;
 }
 
-type ArrayToRecordKey<K, T> = K extends keyof T ? T[K] & PropertyKey : K extends (item: T) => PropertyKey ? ReturnType<K> : never;
-type ArrayToRecordValue<V, T> = V extends readonly (keyof T)[] ? Pick<T, Extract<V[number], keyof T>> : V extends keyof T ? T[V] : V extends (item: T) => any ? ReturnType<V> : T;
+export type ArrayToRecordKey<K, T> = K extends keyof T ? T[K] & PropertyKey : K extends (item: T) => PropertyKey ? ReturnType<K> : never;
+export type ArrayToRecordValue<V, T> = V extends readonly (keyof T)[] ? Pick<T, Extract<V[number], keyof T>> : V extends keyof T ? T[V] : V extends (item: T) => any ? ReturnType<V> : T;
 
 export function arrayToRecord<T, K extends keyof T | ((item: T) => PropertyKey)>(array: T[], keyProp: K): Record<ArrayToRecordKey<K, T>, T>;
 
