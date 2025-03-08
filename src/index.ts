@@ -1,2 +1,2 @@
-export { arrayToRecord, arrayToMap } from './array';
-export { objectKeys, objectValues, objectEntries, objectFromEntries } from './object';
+export { arrayToRecord, arrayToMap } from './array.js';
+export { objectKeys, objectValues, objectEntries, objectFromEntries } from './object.js';

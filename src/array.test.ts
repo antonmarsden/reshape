@@ -1,4 +1,4 @@
-import { arrayToMap } from './array';
+import { arrayToMap } from './array.js';
 import { test, describe, expect } from 'bun:test';
 
 // Sample data
