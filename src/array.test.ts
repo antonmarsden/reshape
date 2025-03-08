@@ -1,4 +1,4 @@
-import { arrayToMap, arrayToMultiMap, arrayToMultiRecord, arrayToRecord } from './array';
+import { arrayToMap, arrayToRecord } from './array';
 import { test } from 'bun:test';
 
 const data = [
@@ -26,21 +26,21 @@ test('arrayToObjectRecord', () => {
 });
 
 // Example usage:
-const data2 = [
-  { id: 1, name: 'Alice', age: 25 },
-  { id: 2, name: 'Bob', age: 30 },
-  { id: 1, name: 'Alex', age: 28 },
-  { id: 3, name: 'Charlie', age: 35 },
-];
-
-test('arrayToMultiMap', () => {
-  arrayToMultiMap(data2, 'id', 'name');
-  arrayToMultiMap(data2, 'id', ['name', 'age'] as const);
-  arrayToMultiMap(data2, 'id');
-});
-
-test('arrayToMultiRecord', () => {
-  arrayToMultiRecord(data2, 'id', 'name');
-  arrayToMultiRecord(data2, 'id', ['name', 'age'] as const);
-  arrayToMultiRecord(data2, 'id');
-});
+// const data2 = [
+//   { id: 1, name: 'Alice', age: 25 },
+//   { id: 2, name: 'Bob', age: 30 },
+//   { id: 1, name: 'Alex', age: 28 },
+//   { id: 3, name: 'Charlie', age: 35 },
+// ];
+//
+// test('arrayToMultiMap', () => {
+//   arrayToMultiMap(data2, 'id', 'name');
+//   arrayToMultiMap(data2, 'id', ['name', 'age'] as const);
+//   arrayToMultiMap(data2, 'id');
+// });
+//
+// test('arrayToMultiRecord', () => {
+//   arrayToMultiRecord(data2, 'id', 'name');
+//   arrayToMultiRecord(data2, 'id', ['name', 'age'] as const);
+//   arrayToMultiRecord(data2, 'id');
+// });
