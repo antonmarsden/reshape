@@ -1,7 +1,7 @@
 {
   "name": "@l33tc0d3/reshape",
   "type": "module",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -37,12 +37,12 @@
   "bugs": "https://github.com/antonmarsden/reshape/issues",
   "author": "Anton Marsden <antonmarsden@gmail.com>",
   "devDependencies": {
-    "@eslint/js": "^9.21.0",
+    "@eslint/js": "^9.22.0",
     "@types/bun": "^1.2.4",
     "bun-plugin-dts": "^0.3.0",
-    "eslint": "^9.21.0",
+    "eslint": "^9.22.0",
     "eslint-plugin-prettier": "^5.2.3",
-    "typescript-eslint": "^8.25.0",
+    "typescript-eslint": "^8.26.0",
     "typedoc": "^0.27.9"
   },
   "private": false,
