@@ -82,6 +82,9 @@ export function arrayToMap<T, K extends keyof T | ((item: T) => PropertyKey), V 
   keyProp: K,
   valueProps?: V
 ): Map<ArrayToMapKey<K, T>, ArrayToMapValue<V, T>> {
+  if (!Array.isArray(array)) {
+    throw new TypeError('Expected an array as input');
+  }
   const getKey: (item: T) => ArrayToMapKey<K, T> =
     typeof keyProp === 'function' ? (keyProp as (item: T) => ArrayToMapKey<K, T>) : (((item: T) => item[keyProp as keyof T]) as (item: T) => ArrayToMapKey<K, T>);
 
@@ -195,6 +198,9 @@ export function arrayToRecord<T, K extends keyof T | ((item: T) => PropertyKey),
   keyProp: K,
   valueProps?: V
 ): Record<ArrayToRecordKey<K, T>, ArrayToRecordValue<V, T>> {
+  if (!Array.isArray(array)) {
+    throw new TypeError('Expected an array as input');
+  }
   const getKey: (item: T) => ArrayToRecordKey<K, T> =
     typeof keyProp === 'function' ? (keyProp as (item: T) => ArrayToRecordKey<K, T>) : (((item: T) => item[keyProp as keyof T]) as (item: T) => ArrayToRecordKey<K, T>);
 
@@ -222,6 +228,6 @@ export function arrayToRecord<T, K extends keyof T | ((item: T) => PropertyKey),
       acc[getKey(item)] = getValue(item); // Adding to the record
       return acc;
     },
-    {} as Record<ArrayToRecordKey<K, T>, ArrayToRecordValue<V, T>>
+    Object.create(null) as Record<ArrayToRecordKey<K, T>, ArrayToRecordValue<V, T>>
   );
 }
